@@ -8,87 +8,59 @@ def bombplacing(Board,length,width,Bombs):
             Board[randrow, randcolumn] = 10
     return Board
 def count(Board,length,width,row,column):
+    count = 0
+    
     if Board[row,column] != -1:
         return Board[row,column]
-    count = 0
-    try:
+    
+    if row-1 >= 0 and column-1 >= 0:
         if Board[row-1,column-1] == 10:
             count += 1
-    except:
-        pass
-    try:
+    if column-1 >= 0:
         if Board[row,column-1] == 10:
             count += 1
-    except:
-        pass
-    try:
+    if row+1 < length and column-1 >= 0:
         if Board[row+1,column-1] == 10: 
             count += 1
-    except:
-        pass
-    try:
+    if row-1 >= 0:
         if Board[row-1,column] == 10:
             count += 1
-    except:
-        pass
-    try:
+    if row+1 < length:
         if Board[row+1,column] == 10: 
             count += 1
-    except:
-        pass
-    try:
+    if row-1 >= 0 and column+1 < width:
         if Board[row-1,column+1] == 10:
             count += 1
-    except:
-        pass
-    try:
+
+    if column+1 < width:
         if Board[row,column+1] == 10:
             count += 1
-    except:
-        pass
-    try:
+    if row+1 < length and column+1 < width:
         if Board[row+1,column+1] == 10:
             count += 1
-    except:
-        pass
+            
     return count
 def uncover(Board,length,width):
     while np.count_nonzero(Board == 0) > 0:
         for i in range(length):
             for j in range(width):
                 if Board[i,j] == 0:
-                    try:
+                    if i-1 >= 0 and j-1 >= 0:
                         Board[i-1,j-1] = count(Board,length,width,i-1,j-1)
-                    except:
-                       pass
-                    try:
+                    if j-1 >= 0:
                         Board[i,j-1] = count(Board,length,width,i,j-1)
-                    except:
-                        pass
-                    try:
+                    if j-1 >= 0 and i+1 < length:
                         Board[i+1,j-1] = count(Board,length,width,i+1,j-1)
-                    except:
-                        pass
-                    try:
+                    if i-1 >= 0:
                         Board[i-1,j] = count(Board,length,width,i-1,j)
-                    except:
-                        pass
-                    try:
+                    if i+1 < length:
                         Board[i+1,j] = count(Board,length,width,i+1,j)
-                    except:
-                        pass
-                    try:
+                    if i-1 >= 0 and j+1 < width:
                         Board[i-1,j+1] = count(Board,length,width,i-1,j+1)
-                    except:
-                        pass
-                    try:
+                    if j+1 < width:
                         Board[i,j+1] = count(Board,length,width,i,j+1)
-                    except:
-                        pass
-                    try:
+                    if i+1 < length and j+1 < width:
                         Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
-                    except:
-                        pass
                     Board[i,j] = -2
     return Board
 def showboard(Board,length,width,showbombs):
@@ -101,7 +73,7 @@ def showboard(Board,length,width,showbombs):
             if showbombs == False and Board[i,j] == 10: print("⚫", end = "")
             if Board[i,j] == 11: print("💥", end = "")
             if Board[i,j] == 0 or Board[i,j] == -2: print("⚪", end = "")
-            if Board[i,j] == 1: print(" ❶", end = "")
+            if Board[i,j] == 1: print(" ➊", end = "")
             if Board[i,j] == 2: print(" ❷", end = "")
             if Board[i,j] == 3: print(" ❸", end = "")
             if Board[i,j] == 4: print(" ❹", end = "")
@@ -154,7 +126,6 @@ for i in range(-2,1):
             Board[firstrow+i,firstcolumn+j] = 0
         except:
             continue
-print(Board)
 Board = bombplacing(Board,length,width,Bombs)
 for i in range(-2,1):
     for j in range(-2,1):
@@ -163,9 +134,7 @@ for i in range(-2,1):
         except:
             continue
 Board[firstrow-1,firstcolumn-1] = 0
-print(Board)
 Board = uncover(Board,length,width)
-print(Board)
 showboard(Board,length,width,False)
 while np.count_nonzero(Board == -1) + np.count_nonzero(Board == -3) > 0:
     marker = input("do you want to set/remove a mark(m) or to dig somewhere(d)?")
@@ -179,18 +148,23 @@ while np.count_nonzero(Board == -1) + np.count_nonzero(Board == -3) > 0:
             showboard(Board,length,width,False)
             print("Not a valid response, please try again.")
     elif marker == "d":
-        row = int(input("in which row do you want to dig?\n"))
-        column = int(input("in which column do you want to dig?\n"))
-        if Board[row-1,column-1] == 10:
-            Board[row-1,column-1] = 11
-            showboard(Board,length,width,True)
-            print("You have lost you idiot, now go crying")
-            break
-        elif Board[row-1,column-1] == -3 or Board[row-1,column-1] == -10:
+        try:
+            row = int(input("in which row do you want to dig?\n"))
+            column = int(input("in which column do you want to dig?\n"))
+            if Board[row-1,column-1] == 10:
+                Board[row-1,column-1] = 11
+                showboard(Board,length,width,True)
+                print("You have lost you idiot, now go crying")
+                break
+        except:
+            print("This square doesn't exist you idiot")
+            continue
+        if Board[row-1,column-1] == -3 or Board[row-1,column-1] == -10:
             showboard(Board,length,width,False)
             print("you have to remove the mark before you mine, try again")
         elif Board[row-1,column-1] == -1:
             Board[row-1,column-1] = count(Board,length,width,row-1,column-1)
+            Board = uncover(Board,length,width)
             showboard(Board,length,width,False)
         else:
             showboard(Board,length,width,False)
