@@ -7,11 +7,10 @@ def bombplacing(Board,length,width,Bombs):
         if Board[randrow, randcolumn] == -1:
             Board[randrow, randcolumn] = 10
     return Board
-
 def count(Board,length,width,row,column):
     count = 0
     
-    if Board[row,column] != -1 and Board[row,column] != -3:
+    if Board[row,column] != -1:
         return Board[row,column]
     
     if row-1 >= 0 and column-1 >= 0:
@@ -40,7 +39,6 @@ def count(Board,length,width,row,column):
             count += 1
             
     return count
-
 def uncover(Board,length,width):
     while np.count_nonzero(Board == 0) > 0:
         for i in range(length):
@@ -64,7 +62,6 @@ def uncover(Board,length,width):
                         Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
                     Board[i,j] = -2
     return Board
-
 def showboard(Board,length,width,showbombs):
     print("  ",end = "")
     for j in range(width):
@@ -88,7 +85,6 @@ def showboard(Board,length,width,showbombs):
             if Board[i,j] == 8: print(" ❽", end = "")
     print("")
     pass
-
 def setflag(Board,row,column):
     if Board[row,column] == 10: return -10
     elif Board[row,column] == -10: return 10
@@ -98,25 +94,23 @@ def setflag(Board,row,column):
         print("you already uncovered this, why flag it, bruh")
         return Board[row,column]
     
-print("\nHello Player! Welcome to my Minesweeper!\n")
+print("Hello Player!\nwe're gonna play some Minesweeper Today :D\nAre you excited?\nfirst i have a few questions for you tho:")
 while True:
     try:
-        length = int(input("How long should the board be(3-100)?\n"))
-        width = int(input("How wide should the board be(3-100)?\n"))
-        Bombs = int(input(f"how many Bombs do you want to be placed(max {length*width-9})?\n"))
+        length = int(input("How long should the board be?\n"))
+        width = int(input("How wide should the board be?\n"))
+        Bombs = int(input("how many Bombs do you want to be placed?\n"))
     except:
-        print("Try again!")
+        print("Those are not numbers you idiot")
         continue
-    if 3 > length or 3 > width or length > 100 or width > 100 or Bombs >= length*width-8 or Bombs < 0: 
-        print("Try again!")
+    if 1 > length or 1 > width or length*width > 5000 or Bombs >= length*width-8 or Bombs < 0: 
+        print("Try again, i'm not doing those sizes")
         continue
     break
 Board = np.zeros((length,width))
 Board[Board == 0] = -1
-
 print("this is the Board:")
 showboard(Board,length,width,True)
-
 while True:
     try:
         firstrow = int(input("In which row do you want to dig first?\n"))
@@ -128,7 +122,6 @@ while True:
         print("you're out of bounds idiot")
         continue
     break
-
 for i in range(-2,1):
     for j in range(-2,1):
         try:
@@ -142,7 +135,6 @@ for i in range(-2,1):
             Board[firstrow+i,firstcolumn+j] = -1
         except:
             continue
-
 Board[firstrow-1,firstcolumn-1] = 0
 Board = uncover(Board,length,width)
 showboard(Board,length,width,False)
