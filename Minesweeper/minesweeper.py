@@ -71,18 +71,23 @@ def uncover(Board,length,width):
                         Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
                     Board[i,j] = -2
     return Board
+def uncoverall(Board,length,width):
+    for i in range(length):
+        for j in range(width):
+            Board[i,j] = count(Board,length,width,i,j)
+    
     
     
 print("\nHello Player! Welcome to my Minesweeper!\n")
 while True:
     try:
-        length = int(input("How long should the board be(3-500)?\n"))
-        width = int(input("How wide should the board be(3-500)?\n"))
+        length = int(input("How long should the board be(3-200)?\n"))
+        width = int(input("How wide should the board be(3-200)?\n"))
         Bombs = int(input(f"how many Bombs do you want to be placed(max {length*width-9})?\n"))
     except:
         print("Try again!")
         continue
-    if 3 > length or 3 > width or length > 500 or width > 500 or Bombs >= length*width-8 or Bombs < 0: 
+    if 3 > length or 3 > width or length > 200 or width > 200 or Bombs >= length*width-8 or Bombs < 0: 
         print("Try again!")
         continue
     break
@@ -122,13 +127,8 @@ while True:
             pygame.quit()
             exit()
         if event.type == pygame.MOUSEBUTTONDOWN and lost == False and won == False: #Damit mer nüt me chan mache usser umeluege am schluss
-            
-            tile = (int(event.pos[0]*zoom-xmove))//k,int((event.pos[1]*zoom-ymove)//k)
-            print(tile)
-            print((event.pos[0]*zoom)/k-xmove*zoom/k,((event.pos[1]*zoom)//k-ymove/zoom/k))
-            tilex = math.floor((event.pos[0]-xmove//zoom)/(k//zoom))
-            tiley = math.floor((event.pos[1]-ymove//zoom)/(k//zoom))
-            tile = (tilex,tiley)
+    
+            tile = (math.floor((event.pos[0]-xmove//zoom)/(k//zoom)),math.floor((event.pos[1]-ymove//zoom)/(k//zoom)))
             if tile[0] < 0 or tile[1] < 0 or tile[0] >= length or tile[1] >= width:
                 continue
     
@@ -159,6 +159,8 @@ while True:
                     lost = True
                     showbombs = True
                     print("you have lost the Game! Get good")
+                    print("press r to reset the Board")
+                    
             
                 else:
                     Board[tile[0],tile[1]] = count(Board,length,width,tile[0],tile[1])
@@ -172,6 +174,17 @@ while True:
     
     
     pressed = pygame.key.get_pressed()
+    if pressed[pygame.K_r] and won or pressed[pygame.K_r] and lost:#reset
+        firstmove = True
+        lost = False
+        showbombs = False
+        won = False
+        Board = np.zeros((length,width))
+        Board[Board == 0] = -1
+    
+    if pressed[pygame.K_u] and lost:
+        uncoverall(Board,length,width)
+    
     if pressed[pygame.K_s] and width*(k//zoom)+ymove//zoom > 690:
        ymove -= 4
        if width*(k//zoom)+ymove//zoom < 690: 
@@ -212,6 +225,8 @@ while True:
         print("You Have won the Game, Congratulations!")
         won = True
         showbombs = True
+        print("press r to reset the Board")
+        
     
     Screen.blit(background_surf,(0,0))
     for i in range(length):
