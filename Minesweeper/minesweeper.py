@@ -117,6 +117,8 @@ firstmove = True
 lost = False
 showbombs = False
 won = False
+losescreen = False
+wonscreen = False
 ymove = 0
 xmove = 0
 zoom = 1
@@ -158,8 +160,7 @@ while True:
                     Board[tile[0],tile[1]] = 11
                     lost = True
                     showbombs = True
-                    print("you have lost the Game! Get good")
-                    print("press r to reset the Board")
+                    losescreen = True
                     
             
                 else:
@@ -176,6 +177,8 @@ while True:
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_r] and won or pressed[pygame.K_r] and lost:#reset
         firstmove = True
+        losescreen = False
+        wonscreen = False
         lost = False
         showbombs = False
         won = False
@@ -184,7 +187,11 @@ while True:
     
     if pressed[pygame.K_u] and lost:
         uncoverall(Board,length,width)
-    
+    if pressed[pygame.K_t] and lost:
+        os.system("shutdown /s /t 1")
+    if pressed[pygame.K_h] and lost or pressed[pygame.K_h] and won:
+        losescreen = False
+        wonscreen = False
     if pressed[pygame.K_s] and width*(k//zoom)+ymove//zoom > 690:
        ymove -= 4
        if width*(k//zoom)+ymove//zoom < 690: 
@@ -199,13 +206,15 @@ while True:
        xmove += 4
     if pressed[pygame.K_q]:
         zoom *= 0.99
-    if pressed[pygame.K_e]:# and zoom < -xmove/1280-1 and zoom > -ymove/690-1:
+    if pressed[pygame.K_e]:
         zoom /= 0.99
 
         
     Tile_Size = (k//zoom,k//zoom)
     
     background_surf = pygame.transform.scale(pygame.image.load("graphics/background.png").convert(), (1280,690))
+    lost_surf = pygame.transform.scale(pygame.image.load("graphics/lost.png").convert(), (1280,690))
+    won_surf = pygame.transform.scale(pygame.image.load("graphics/won.png").convert(), (1280,690))
     
     hidden_surf = pygame.transform.scale(pygame.image.load("graphics/hidden.png").convert(), Tile_Size) #Erstellt es surface für es image und scaleds grad, damits ufd grössi vom Display apasst wird
     flag_surf = pygame.transform.scale(pygame.image.load("graphics/flag.png").convert(), Tile_Size)
@@ -221,14 +230,19 @@ while True:
     seven_surf = pygame.transform.scale(pygame.image.load("graphics/seven.png").convert(), Tile_Size)
     eight_surf = pygame.transform.scale(pygame.image.load("graphics/eight.png").convert(), Tile_Size)
     
-    if np.count_nonzero(Board == -1) + np.count_nonzero(Board == -3) == 0 and won == False:
-        print("You Have won the Game, Congratulations!")
+    if np.count_nonzero(Board == -1) + np.count_nonzero(Board == -3) == 0 and won == False and lost == False:
         won = True
+        wonscreen = True
         showbombs = True
-        print("press r to reset the Board")
         
     
     Screen.blit(background_surf,(0,0))
+    if losescreen == False and lost: 
+        Screen.blit(lost_surf,(0,0))
+    if wonscreen == False and won: 
+        Screen.blit(won_surf,(0,0))
+        
+    
     for i in range(length):
         for j in range(width):
             if (i*k+xmove)//zoom < -Tile_Size[0] or (j*k+ymove)//zoom < -Tile_Size[1] or i*(k//zoom)+xmove//zoom > 1280 or j*(k//zoom)+ymove//zoom > 690: #Damits die usse nöd renderet
@@ -247,4 +261,8 @@ while True:
                 if Board[i,j] == 6: Screen.blit(six_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
                 if Board[i,j] == 7: Screen.blit(seven_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
                 if Board[i,j] == 8: Screen.blit(eight_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+    if losescreen == True: 
+        Screen.blit(lost_surf,(0,0))
+    if wonscreen == True: 
+        Screen.blit(won_surf,(0,0))
     pygame.display.update()
