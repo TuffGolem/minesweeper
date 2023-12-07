@@ -224,6 +224,7 @@ while True:
         uncoverall(Board,length,width)
     if pressed[pygame.K_t] and lost:
         os.system("shutdown /s /t 1")
+        os.system('sudo shutdown now')
     if pressed[pygame.K_h] and lost or pressed[pygame.K_h] and won:
         losescreen = False
         wonscreen = False
