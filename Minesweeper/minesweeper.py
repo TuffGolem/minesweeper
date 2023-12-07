@@ -49,6 +49,7 @@ def count(Board,length,width,row,column):
     return count
 
 def uncover(Board,length,width):
+    
     while np.count_nonzero(Board == 0) > 0:
         for i in range(length):
             for j in range(width):
@@ -75,16 +76,46 @@ def uncoverall(Board,length,width):
     for i in range(length):
         for j in range(width):
             Board[i,j] = count(Board,length,width,i,j)
+            
+def updatescreen():
+    Screen.blit(background_surf,(0,0))
+    if losescreen == False and lost: 
+        Screen.blit(lost_surf,(0,0))
+    if wonscreen == False and won: 
+        Screen.blit(won_surf,(0,0))
+
+    for i in range(length):
+        for j in range(width):
+            if (i*k+xmove)//zoom < -Tile_Size[0] or (j*k+ymove)//zoom < -Tile_Size[1] or i*(k//zoom)+xmove//zoom > 1280 or j*(k//zoom)+ymove//zoom > 700: #Damits die usse nöd renderet
+                continue
+            else:
+                if Board[i,j] == -1 or Board[i,j] == 10 and showbombs == False: Screen.blit(hidden_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 10 and showbombs == True or Board[i,j] == -10 and showbombs == True: Screen.blit(bomb_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == -3 or Board[i,j] == -10 and showbombs == False: Screen.blit(flag_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 11: Screen.blit(explosion_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == -2 or Board[i,j] == 0: Screen.blit(zero_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 1: Screen.blit(one_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 2: Screen.blit(two_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 3: Screen.blit(three_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 4: Screen.blit(four_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 5: Screen.blit(five_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 6: Screen.blit(six_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 7: Screen.blit(seven_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == 8: Screen.blit(eight_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+    if losescreen == True: 
+        Screen.blit(lost_surf,(0,0))
+    if wonscreen == True: 
+        Screen.blit(won_surf,(0,0))
+    pygame.display.update()
     
-    
-    
+
 print("\nHello Player! Welcome to my Minesweeper!\n")
 while True:
     try:
         length = int(input("How long should the board be(3-200)?\n"))
         width = int(input("How wide should the board be(3-200)?\n"))
         Bombs = int(input(f"how many Bombs do you want to be placed(max {length*width-9})?\n"))
-    except:
+    except ValueError:
         print("Try again!")
         continue
     if 3 > length or 3 > width or length > 200 or width > 200 or Bombs >= length*width-8 or Bombs < 0: 
@@ -97,20 +128,21 @@ if width > length:
     width = changer
 
 #Breite und Höhe des Screens festlegen sowie Brett(für Programm) definieren
-if length/width > 1280/690: #Längi/breiti isch grösser als die vom Laptop > Längi isch maximalfaktor
+if length/width > 1280/700: #Längi/breiti isch grösser als die vom Laptop > Längi isch maximalfaktor
     k = 1280//length
 else: #Breiti macht us wie gross mers chönd mache
-    k = 690//width
+    k = 700//width
 x = length*k
 y = width*k
-Board = np.zeros((length,width))
+Board = np.full((length,width),-1)
 Board[Board == 0] = -1
     
 pygame.init()
-Screen = pygame.display.set_mode((1280,690))
+Screen = pygame.display.set_mode((1280,700))
 pygame.display.set_caption("Minesweeper")
 icon = pygame.image.load("graphics/flag.png")
 pygame.display.set_icon(icon)
+clock = pygame.time.Clock()
 
 Tile_Size = (k,k)
 firstmove = True
@@ -123,7 +155,6 @@ ymove = 0
 xmove = 0
 zoom = 1
 while True:
-    #Screen.fill((0,0,0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -172,8 +203,13 @@ while True:
                 elif Board[tile[0],tile[1]] == -10: Board[tile[0],tile[1]] = 10
                 elif Board[tile[0],tile[1]] == -1: Board[tile[0],tile[1]] = -3
                 elif Board[tile[0],tile[1]] == -3: Board[tile[0],tile[1]] = -1
-    
-    
+        
+        if event.type == pygame.MOUSEWHEEL:
+               if event.y > 0:
+                   zoom *= 0.9
+               elif event.y < 0:
+                   zoom /= 0.9
+        
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_r] and won or pressed[pygame.K_r] and lost:#reset
         firstmove = True
@@ -182,8 +218,7 @@ while True:
         lost = False
         showbombs = False
         won = False
-        Board = np.zeros((length,width))
-        Board[Board == 0] = -1
+        Board = np.full((length,width),-1)
     
     if pressed[pygame.K_u] and lost:
         uncoverall(Board,length,width)
@@ -192,10 +227,10 @@ while True:
     if pressed[pygame.K_h] and lost or pressed[pygame.K_h] and won:
         losescreen = False
         wonscreen = False
-    if pressed[pygame.K_s] and width*(k//zoom)+ymove//zoom > 690:
+    if pressed[pygame.K_s] and width*(k//zoom)+ymove//zoom > 700:
        ymove -= 4
-       if width*(k//zoom)+ymove//zoom < 690: 
-           ymove = (690-width*(k//zoom))*zoom
+       if width*(k//zoom)+ymove//zoom < 700: 
+           ymove = (700-width*(k//zoom))*zoom
     if pressed[pygame.K_w] and ymove < 0:
        ymove += 4
     if pressed[pygame.K_d] and length*(k//zoom)+xmove//zoom > 1280:
@@ -205,16 +240,16 @@ while True:
     if pressed[pygame.K_a] and xmove < 0:
        xmove += 4
     if pressed[pygame.K_q]:
-        zoom *= 0.99
+        zoom *= 0.95
     if pressed[pygame.K_e]:
-        zoom /= 0.99
+        zoom /= 0.95
 
         
     Tile_Size = (k//zoom,k//zoom)
     
-    background_surf = pygame.transform.scale(pygame.image.load("graphics/background.png").convert(), (1280,690))
-    lost_surf = pygame.transform.scale(pygame.image.load("graphics/lost.png").convert(), (1280,690))
-    won_surf = pygame.transform.scale(pygame.image.load("graphics/won.png").convert(), (1280,690))
+    background_surf = pygame.transform.scale(pygame.image.load("graphics/background.png").convert(), (1280,700))
+    lost_surf = pygame.transform.scale(pygame.image.load("graphics/lost.png").convert(), (1280,700))
+    won_surf = pygame.transform.scale(pygame.image.load("graphics/won.png").convert(), (1280,700))
     
     hidden_surf = pygame.transform.scale(pygame.image.load("graphics/hidden.png").convert(), Tile_Size) #Erstellt es surface für es image und scaleds grad, damits ufd grössi vom Display apasst wird
     flag_surf = pygame.transform.scale(pygame.image.load("graphics/flag.png").convert(), Tile_Size)
@@ -235,34 +270,6 @@ while True:
         wonscreen = True
         showbombs = True
         
+    updatescreen()
     
-    Screen.blit(background_surf,(0,0))
-    if losescreen == False and lost: 
-        Screen.blit(lost_surf,(0,0))
-    if wonscreen == False and won: 
-        Screen.blit(won_surf,(0,0))
-        
-    
-    for i in range(length):
-        for j in range(width):
-            if (i*k+xmove)//zoom < -Tile_Size[0] or (j*k+ymove)//zoom < -Tile_Size[1] or i*(k//zoom)+xmove//zoom > 1280 or j*(k//zoom)+ymove//zoom > 690: #Damits die usse nöd renderet
-                continue
-            else:
-                if Board[i,j] == -1 or Board[i,j] == 10 and showbombs == False: Screen.blit(hidden_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 10 and showbombs == True or Board[i,j] == -10 and showbombs == True: Screen.blit(bomb_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == -3 or Board[i,j] == -10 and showbombs == False: Screen.blit(flag_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 11: Screen.blit(explosion_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == -2 or Board[i,j] == 0: Screen.blit(zero_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 1: Screen.blit(one_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 2: Screen.blit(two_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 3: Screen.blit(three_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 4: Screen.blit(four_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 5: Screen.blit(five_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 6: Screen.blit(six_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 7: Screen.blit(seven_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 8: Screen.blit(eight_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-    if losescreen == True: 
-        Screen.blit(lost_surf,(0,0))
-    if wonscreen == True: 
-        Screen.blit(won_surf,(0,0))
-    pygame.display.update()
+    clock.tick(60)
