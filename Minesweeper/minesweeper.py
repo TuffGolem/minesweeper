@@ -23,7 +23,7 @@ class Square(IntEnum):
    SIX = 6
    SEVEN = 7
    EIGHT = 8
-   
+ADJACENT_SHIFTS = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
    
 def bombplacing(Board,length,width,Bombs):
     while np.count_nonzero(Board == Square.BOMB) < Bombs:
@@ -34,63 +34,24 @@ def bombplacing(Board,length,width,Bombs):
     return Board
 
 def count(Board,length,width,row,column):
-    count = 0
-    
     if Board[row,column] != Square.HIDDEN:
         return Board[row,column]
-    
-    if row-1 >= 0 and column-1 >= 0:
-        if Board[row-1,column-1] == Square.BOMB or Board[row-1,column-1] == Square.FLAGGED_BOMB:
-            count += 1
-    if column-1 >= 0:
-        if Board[row,column-1] == Square.BOMB or Board[row,column-1] == Square.FLAGGED_BOMB:
-            count += 1
-    if row+1 < length and column-1 >= 0:
-        if Board[row+1,column-1] == Square.BOMB or Board[row+1,column-1] == Square.FLAGGED_BOMB: 
-            count += 1
-    if row-1 >= 0:
-        if Board[row-1,column] == Square.BOMB or Board[row-1,column] == Square.FLAGGED_BOMB:
-            count += 1
-    if row+1 < length:
-        if Board[row+1,column] == Square.BOMB or Board[row+1,column] == Square.FLAGGED_BOMB: 
-            count += 1
-    if row-1 >= 0 and column+1 < width:
-        if Board[row-1,column+1] == Square.BOMB or Board[row-1,column+1] == Square.FLAGGED_BOMB:
-            count += 1
-    if column+1 < width:
-        if Board[row,column+1] == Square.BOMB or Board[row,column+1] == Square.FLAGGED_BOMB:
-            count += 1
-    if row+1 < length and column+1 < width:
-        if Board[row+1,column+1] == Square.BOMB or Board[row+1,column+1] == Square.FLAGGED_BOMB:
-            count += 1
-            
+    count = 0
+    for shift in ADJACENT_SHIFTS:
+        if isvalid(length,width,row+shift[0],column+shift[1]): 
+            if Board[row+shift[0],column+shift[1]] == Square.BOMB or Board[row+shift[0],column+shift[1]] == Square.FLAGGED_BOMB: count += 1
     return count
 
 def uncover(Board,length,width):
-    
     while np.count_nonzero(Board == Square.ZERO) > 0:
-        for i in range(length):
-            for j in range(width):
-                if Board[i,j] != Square.ZERO:
+        for row in range(length):
+            for column in range(width):
+                if Board[row,column] != Square.ZERO:
                     continue
-                
-                if i-1 >= 0 and j-1 >= 0:
-                    Board[i-1,j-1] = count(Board,length,width,i-1,j-1)
-                if j-1 >= 0:
-                    Board[i,j-1] = count(Board,length,width,i,j-1)
-                if j-1 >= 0 and i+1 < length:
-                    Board[i+1,j-1] = count(Board,length,width,i+1,j-1)
-                if i-1 >= 0:
-                    Board[i-1,j] = count(Board,length,width,i-1,j)
-                if i+1 < length:
-                    Board[i+1,j] = count(Board,length,width,i+1,j)
-                if i-1 >= 0 and j+1 < width:
-                    Board[i-1,j+1] = count(Board,length,width,i-1,j+1)
-                if j+1 < width:
-                    Board[i,j+1] = count(Board,length,width,i,j+1)
-                if i+1 < length and j+1 < width:
-                    Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
-                Board[i,j] = Square.ZERO_ALREADY_COUNTED
+                for shift in ADJACENT_SHIFTS:
+                    if isvalid(length,width,row+shift[0],column+shift[1]): 
+                        Board[row+shift[0],column+shift[1]] = count(Board,length,width,row+shift[0],column+shift[1])
+                Board[row,column] = Square.ZERO_ALREADY_COUNTED
     return Board
 def uncoverall(Board,length,width):
     for i in range(length):
@@ -134,6 +95,11 @@ def changeflag(Board,tile):
     elif Board[tile[0],tile[1]] == Square.HIDDEN: Board[tile[0],tile[1]] = Square.FLAGGED_NON_BOMB
     elif Board[tile[0],tile[1]] == Square.FLAGGED_NON_BOMB: Board[tile[0],tile[1]] = Square.HIDDEN
     return Board
+
+def isvalid(length,width,row,column):
+    if row < length and row >= 0 and column < width and column >= 0 and type(row) == int and type(column) == int: return True
+    return False
+        
 
 print("\nHello Player! Welcome to my Minesweeper!\n")
 while True:
