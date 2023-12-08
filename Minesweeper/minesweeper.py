@@ -161,20 +161,14 @@ while True:
                     firstmove = False
                     for i in range(-1,2):
                         for j in range(-1,2):
-                            try:
-                                Board[tile[0]+i,tile[1]+j] = Square.ZERO
-                            except:
-                                continue
-                            
+                            if isvalid(length,width,tile[0]+i,tile[1]+j): Board[tile[0]+i,tile[1]+j] = Square.ZERO     
+                    
                     Board = bombplacing(Board,length,width,Bombs)
                     
                     for i in range(-1,2):
                         for j in range(-1,2):
-                            try:
-                                Board[tile[0]+i,tile[1]+j] = Square.HIDDEN
-                            except:
-                                continue
-
+                                if isvalid(length,width,tile[0]+i,tile[1]+j): Board[tile[0]+i,tile[1]+j] = Square.HIDDEN
+                    
                     Board[tile[0],tile[1]] = Square.ZERO
                     Board = uncover(Board,length,width)
     
