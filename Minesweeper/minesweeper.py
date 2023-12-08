@@ -43,6 +43,7 @@ def count(Board,length,width,row,column):
     return count
 
 def uncover(Board,length,width):
+    
     while np.count_nonzero(Board == Square.ZERO) > 0:
         for row in range(length):
             for column in range(width):
@@ -60,18 +61,18 @@ def uncoverall(Board,length,width):
 
 def select_surface(Board,tile_x,tile_y,showbombs):
     if Board[tile_x,tile_y] == Square.HIDDEN or Board[tile_x,tile_y] == Square.BOMB and showbombs == False: return hidden_surf
-    elif Board[tile_x,tile_y] == Square.BOMB and showbombs == True or Board[tile_x,tile_y] == Square.FLAGGED_BOMB and showbombs == True: return bomb_surf
-    elif Board[tile_x,tile_y] == Square.FLAGGED_NON_BOMB or Board[tile_x,tile_y] == Square.FLAGGED_BOMB and showbombs == False: return flag_surf
-    elif Board[tile_x,tile_y] == Square.EXPLOSION: return explosion_surf
-    elif Board[tile_x,tile_y] == Square.ZERO_ALREADY_COUNTED or Board[tile_x,tile_y] == Square.ZERO: return zero_surf
-    elif Board[tile_x,tile_y] == Square.ONE: return one_surf
-    elif Board[tile_x,tile_y] == Square.TWO: return two_surf
-    elif Board[tile_x,tile_y] == Square.THREE: return three_surf
-    elif Board[tile_x,tile_y] == Square.FOUR: return four_surf
-    elif Board[tile_x,tile_y] == Square.FIVE: return five_surf
-    elif Board[tile_x,tile_y] == Square.SIX: return six_surf
-    elif Board[tile_x,tile_y] == Square.SEVEN: return seven_surf
-    elif Board[tile_x,tile_y] == Square.EIGHT: return eight_surf
+    if Board[tile_x,tile_y] == Square.FLAGGED_NON_BOMB or Board[tile_x,tile_y] == Square.FLAGGED_BOMB and showbombs == False: return flag_surf
+    if Board[tile_x,tile_y] == Square.ZERO_ALREADY_COUNTED or Board[tile_x,tile_y] == Square.ZERO: return zero_surf
+    if Board[tile_x,tile_y] == Square.ONE: return one_surf
+    if Board[tile_x,tile_y] == Square.TWO: return two_surf
+    if Board[tile_x,tile_y] == Square.THREE: return three_surf
+    if Board[tile_x,tile_y] == Square.FOUR: return four_surf
+    if Board[tile_x,tile_y] == Square.FIVE: return five_surf
+    if Board[tile_x,tile_y] == Square.SIX: return six_surf
+    if Board[tile_x,tile_y] == Square.SEVEN: return seven_surf
+    if Board[tile_x,tile_y] == Square.EIGHT: return eight_surf
+    if Board[tile_x,tile_y] == Square.EXPLOSION: return explosion_surf
+    if Board[tile_x,tile_y] == Square.BOMB and showbombs == True or Board[tile_x,tile_y] == Square.FLAGGED_BOMB and showbombs == True: return bomb_surf
     
 def updatescreen(Screen):
     Screen.blit(background_surf,(0,0))
@@ -82,9 +83,9 @@ def updatescreen(Screen):
 
     for tile_x in range(length):
         for tile_y in range(width):
-            if tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, round(Tile_Size), "x","downright") < 0 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, round(Tile_Size), "y","downright") < 0 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, round(Tile_Size), "x","upleft") > 1280 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, round(Tile_Size), "y","upleft") > 700: continue
+            if tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, Tile_Size, "x","downright") < 0 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, Tile_Size, "y","downright") < 0 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, Tile_Size, "x","upleft") > 1280 or tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, Tile_Size, "y","upleft") > 700: continue
             surf = select_surface(Board,tile_x,tile_y,showbombs)
-            Screen.blit(surf,tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, round(Tile_Size), "both","upleft"))    
+            Screen.blit(surf,tile_to_pixel(tile_x, tile_y, xmove, ymove, zoom, Tile_Size, "both","upleft"))    
     if losescreen: 
         Screen.blit(lost_surf,(0,0))
     if wonscreen: 
@@ -107,6 +108,7 @@ def pixel_to_tile(pixel_x,pixel_y,xmove,ymove,zoom,Tile_Size,x_or_y):
     return math.floor((pixel_y-ymove//zoom)/Tile_Size)
 
 def tile_to_pixel(tile_x,tile_y,xmove,ymove,zoom,Tile_Size,x_or_y,where):
+    
     if x_or_y == "x":
         if where == "upleft" or where == "downleft": return tile_x*Tile_Size+xmove//zoom
         if where == "upright" or where == "downright": return (tile_x+1)*Tile_Size+xmove//zoom
@@ -138,11 +140,11 @@ if width > length:
     length = width
     width = changer
 
-#Breite und Höhe des Screens festlegen sowie Brett(für Programm) definieren
-if length/width > 1280/700: #Längi/breiti isch grösser als die vom Laptop > Längi isch maximalfaktor
-    Tile_Size = 1280//length
-else: #Breiti macht us wie gross mers chönd mache
-    Tile_Size = 700//width
+if length/width > 1280/700:
+    Absolute_Tile_Size = 1280//length
+else:
+    Absolute_Tile_Size = 700//width
+Tile_Size = Absolute_Tile_Size
 x = length*Tile_Size
 y = width*Tile_Size
 Board = np.full((length,width),Square.HIDDEN)
@@ -168,24 +170,22 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-        if event.type == pygame.MOUSEBUTTONDOWN and lost == False and won == False: #Damit mer nüt me chan mache usser umeluege am schluss
+        if event.type == pygame.MOUSEBUTTONDOWN and lost == False and won == False:
     
             tile_x = pixel_to_tile(event.pos[0], event.pos[1], xmove, ymove, zoom, Tile_Size,"x")
             tile_y = pixel_to_tile(event.pos[0], event.pos[1], xmove, ymove, zoom, Tile_Size,"y")
             if isvalid(length, width, tile_x, tile_y) == False: continue
             if pygame.mouse.get_pressed() == (True,False,False):
+                
                 if firstmove:
                     firstmove = False
                     for i in range(-1,2):
                         for j in range(-1,2):
                             if isvalid(length,width,tile_x+i,tile_y+j): Board[tile_x+i,tile_y+j] = Square.ZERO     
-                    
                     Board = bombplacing(Board,length,width,Bombs)
-                    
                     for i in range(-1,2):
                         for j in range(-1,2):
                                 if isvalid(length,width,tile_x+i,tile_y+j): Board[tile_x+i,tile_y+j] = Square.HIDDEN
-                    
                     Board[tile_x,tile_y] = Square.ZERO
                     Board = uncover(Board,length,width)
     
@@ -204,13 +204,13 @@ while True:
             if pygame.mouse.get_pressed() == (False,False,True) and firstmove == False: Board = changeflag(Board,tile_x,tile_y)
     
         if event.type == pygame.MOUSEWHEEL:
-               if event.y > 0:
-                   zoom *= 0.9
-                   Tile_Size /= 0.9
-               elif event.y < 0:
-                   zoom /= 0.9
-                   Tile_Size *= 0.9
-        
+            if event.y > 0:
+                zoom *= 0.9
+                Absolute_Tile_Size /= 0.9
+            elif event.y < 0:
+                zoom /= 0.9
+                Absolute_Tile_Size *= 0.9
+            Tile_Size = round(Absolute_Tile_Size)
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_r] and won or pressed[pygame.K_r] and lost:#reset
         firstmove = True
@@ -229,49 +229,49 @@ while True:
     if pressed[pygame.K_h] and lost or pressed[pygame.K_h] and won:
         losescreen = False
         wonscreen = False
-    if pressed[pygame.K_s] and width*round(Tile_Size)+ymove//zoom > 700:
-       ymove -= 4
-       if width*round(Tile_Size)+ymove//zoom < 700: 
-           ymove = (700-width*round(Tile_Size))*zoom
+    if pressed[pygame.K_s] and width*Tile_Size+ymove//zoom > 700:
+       ymove -= 6
+       if width*Tile_Size+ymove//zoom < 700: 
+           ymove = (700-width*Tile_Size)*zoom
     if pressed[pygame.K_w] and ymove < 0:
-       ymove += 4
-    if pressed[pygame.K_d] and length*round(Tile_Size)+xmove//zoom > 1280:
-       xmove -= 4
-       if length*round(Tile_Size)+xmove//zoom < 1280: #Falls die -4 zu viel gsi sind
-           xmove = (1280-length*round(Tile_Size))*zoom
+       ymove += 6
+    if pressed[pygame.K_d] and length*Tile_Size+xmove//zoom > 1280:
+       xmove -= 6
+       if length*Tile_Size+xmove//zoom < 1280: #Falls die -4 zu viel gsi sind
+           xmove = (1280-length*Tile_Size)*zoom
     if pressed[pygame.K_a] and xmove < 0:
-       xmove += 4
+       xmove += 6
     if pressed[pygame.K_q]:
         zoom *= 0.95
-        Tile_Size /= 0.95
+        Absolute_Tile_Size /= 0.95
     if pressed[pygame.K_e]:
         zoom /= 0.95
-        Tile_Size *= 0.95
+        Absolute_Tile_Size *= 0.95
+    Tile_Size = round(Absolute_Tile_Size)
 
-    
+    Tile_Shape = (Tile_Size,Tile_Size)
     background_surf = pygame.transform.scale(pygame.image.load("graphics/background.png").convert(), (1280,700))
     lost_surf = pygame.transform.scale(pygame.image.load("graphics/lost.png").convert(), (1280,700))
     won_surf = pygame.transform.scale(pygame.image.load("graphics/won.png").convert(), (1280,700))
-    
-    hidden_surf = pygame.transform.scale(pygame.image.load("graphics/hidden.png").convert(), (Tile_Size,Tile_Size)) #Erstellt es surface für es image und scaleds grad, damits ufd grössi vom Display apasst wird
-    flag_surf = pygame.transform.scale(pygame.image.load("graphics/flag.png").convert(), (Tile_Size,Tile_Size))
-    bomb_surf = pygame.transform.scale(pygame.image.load("graphics/bomb.png").convert(), (Tile_Size,Tile_Size))
-    explosion_surf = pygame.transform.scale(pygame.image.load("graphics/explosion.png").convert(), (Tile_Size,Tile_Size))
-    zero_surf = pygame.transform.scale(pygame.image.load("graphics/zero.png").convert(), (Tile_Size,Tile_Size))
-    one_surf = pygame.transform.scale(pygame.image.load("graphics/one.png").convert(), (Tile_Size,Tile_Size))
-    two_surf = pygame.transform.scale(pygame.image.load("graphics/two.png").convert(), (Tile_Size,Tile_Size))
-    three_surf = pygame.transform.scale(pygame.image.load("graphics/three.png").convert(), (Tile_Size,Tile_Size))
-    four_surf = pygame.transform.scale(pygame.image.load("graphics/four.png").convert(), (Tile_Size,Tile_Size))
-    five_surf = pygame.transform.scale(pygame.image.load("graphics/five.png").convert(), (Tile_Size,Tile_Size))
-    six_surf = pygame.transform.scale(pygame.image.load("graphics/six.png").convert(), (Tile_Size,Tile_Size))
-    seven_surf = pygame.transform.scale(pygame.image.load("graphics/seven.png").convert(), (Tile_Size,Tile_Size))
-    eight_surf = pygame.transform.scale(pygame.image.load("graphics/eight.png").convert(), (Tile_Size,Tile_Size))
+    hidden_surf = pygame.transform.scale(pygame.image.load("graphics/hidden.png").convert(), Tile_Shape) #Erstellt es surface für es image und scaleds grad, damits ufd grössi vom Display apasst wird
+    flag_surf = pygame.transform.scale(pygame.image.load("graphics/flag.png").convert(), Tile_Shape)
+    bomb_surf = pygame.transform.scale(pygame.image.load("graphics/bomb.png").convert(), Tile_Shape)
+    explosion_surf = pygame.transform.scale(pygame.image.load("graphics/explosion.png").convert(), Tile_Shape)
+    zero_surf = pygame.transform.scale(pygame.image.load("graphics/zero.png").convert(), Tile_Shape)
+    one_surf = pygame.transform.scale(pygame.image.load("graphics/one.png").convert(), Tile_Shape)
+    two_surf = pygame.transform.scale(pygame.image.load("graphics/two.png").convert(), Tile_Shape)
+    three_surf = pygame.transform.scale(pygame.image.load("graphics/three.png").convert(), Tile_Shape)
+    four_surf = pygame.transform.scale(pygame.image.load("graphics/four.png").convert(), Tile_Shape)
+    five_surf = pygame.transform.scale(pygame.image.load("graphics/five.png").convert(), Tile_Shape)
+    six_surf = pygame.transform.scale(pygame.image.load("graphics/six.png").convert(), Tile_Shape)
+    seven_surf = pygame.transform.scale(pygame.image.load("graphics/seven.png").convert(), Tile_Shape)
+    eight_surf = pygame.transform.scale(pygame.image.load("graphics/eight.png").convert(), Tile_Shape)
     
     if np.count_nonzero(Board == Square.HIDDEN) + np.count_nonzero(Board == Square.FLAGGED_NON_BOMB) == 0 and won == False and lost == False:
         won = True
         wonscreen = True
         showbombs = True
-        
+
     updatescreen(Screen)
     
     clock.tick(60)
