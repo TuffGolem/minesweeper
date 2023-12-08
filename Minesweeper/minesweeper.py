@@ -3,74 +3,94 @@ import random
 import pygame
 import math
 from sys import exit
+from enum import IntEnum
 
 import os #Zum mitem nöchste Commmand s display richtig z plaziere
 os.environ['SDL_VIDEO_WINDOW_POS'] = "0,27"
-
+class Square(IntEnum):
+   FLAGGED_NON_BOMB = -3
+   HIDDEN = -1
+   EXPLOSION = 11
+   BOMB = 10
+   FLAGGED_BOMB = -10
+   ZERO_ALREADY_COUNTED = -2
+   ZERO = 0
+   ONE = 1
+   TWO = 2
+   THREE = 3
+   FOUR = 4
+   FIVE = 5
+   SIX = 6
+   SEVEN = 7
+   EIGHT = 8
+   
+   
 def bombplacing(Board,length,width,Bombs):
-    while np.count_nonzero(Board == 10) < Bombs:
+    while np.count_nonzero(Board == Square.BOMB) < Bombs:
         randcolumn = random.randint(0,width-1)
         randrow = random.randint(0,length-1)
-        if Board[randrow, randcolumn] == -1:
-            Board[randrow, randcolumn] = 10
+        if Board[randrow, randcolumn] == Square.HIDDEN:
+            Board[randrow, randcolumn] = Square.BOMB
     return Board
 
 def count(Board,length,width,row,column):
     count = 0
     
-    if Board[row,column] != -1 and Board[row,column] != -3:
+    if Board[row,column] != Square.HIDDEN:
         return Board[row,column]
     
     if row-1 >= 0 and column-1 >= 0:
-        if Board[row-1,column-1] == 10 or Board[row-1,column-1] == -10:
+        if Board[row-1,column-1] == Square.BOMB or Board[row-1,column-1] == Square.FLAGGED_BOMB:
             count += 1
     if column-1 >= 0:
-        if Board[row,column-1] == 10 or Board[row,column-1] == -10:
+        if Board[row,column-1] == Square.BOMB or Board[row,column-1] == Square.FLAGGED_BOMB:
             count += 1
     if row+1 < length and column-1 >= 0:
-        if Board[row+1,column-1] == 10 or Board[row+1,column-1] == -10: 
+        if Board[row+1,column-1] == Square.BOMB or Board[row+1,column-1] == Square.FLAGGED_BOMB: 
             count += 1
     if row-1 >= 0:
-        if Board[row-1,column] == 10 or Board[row-1,column] == -10:
+        if Board[row-1,column] == Square.BOMB or Board[row-1,column] == Square.FLAGGED_BOMB:
             count += 1
     if row+1 < length:
-        if Board[row+1,column] == 10 or Board[row+1,column] == -10: 
+        if Board[row+1,column] == Square.BOMB or Board[row+1,column] == Square.FLAGGED_BOMB: 
             count += 1
     if row-1 >= 0 and column+1 < width:
-        if Board[row-1,column+1] == 10 or Board[row-1,column+1] == -10:
+        if Board[row-1,column+1] == Square.BOMB or Board[row-1,column+1] == Square.FLAGGED_BOMB:
             count += 1
     if column+1 < width:
-        if Board[row,column+1] == 10 or Board[row,column+1] == -10:
+        if Board[row,column+1] == Square.BOMB or Board[row,column+1] == Square.FLAGGED_BOMB:
             count += 1
     if row+1 < length and column+1 < width:
-        if Board[row+1,column+1] == 10 or Board[row+1,column+1] == -10:
+        if Board[row+1,column+1] == Square.BOMB or Board[row+1,column+1] == Square.FLAGGED_BOMB:
             count += 1
             
     return count
 
 def uncover(Board,length,width):
     
-    while np.count_nonzero(Board == 0) > 0:
+    while np.count_nonzero(Board == Square.ZERO) > 0:
         for i in range(length):
             for j in range(width):
-                if Board[i,j] == 0:
-                    if i-1 >= 0 and j-1 >= 0:
-                        Board[i-1,j-1] = count(Board,length,width,i-1,j-1)
-                    if j-1 >= 0:
-                        Board[i,j-1] = count(Board,length,width,i,j-1)
-                    if j-1 >= 0 and i+1 < length:
-                        Board[i+1,j-1] = count(Board,length,width,i+1,j-1)
-                    if i-1 >= 0:
-                        Board[i-1,j] = count(Board,length,width,i-1,j)
-                    if i+1 < length:
-                        Board[i+1,j] = count(Board,length,width,i+1,j)
-                    if i-1 >= 0 and j+1 < width:
-                        Board[i-1,j+1] = count(Board,length,width,i-1,j+1)
-                    if j+1 < width:
-                        Board[i,j+1] = count(Board,length,width,i,j+1)
-                    if i+1 < length and j+1 < width:
-                        Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
-                    Board[i,j] = -2
+                if Board[i,j] != Square.ZERO:
+                    continue
+                
+                if i-1 >= 0 and j-1 >= 0:
+                    Board[i-1,j-1] = count(Board,length,width,i-1,j-1)
+                if j-1 >= 0:
+                    Board[i,j-1] = count(Board,length,width,i,j-1)
+                if j-1 >= 0 and i+1 < length:
+                    Board[i+1,j-1] = count(Board,length,width,i+1,j-1)
+                if i-1 >= 0:
+                    Board[i-1,j] = count(Board,length,width,i-1,j)
+                if i+1 < length:
+                    Board[i+1,j] = count(Board,length,width,i+1,j)
+                if i-1 >= 0 and j+1 < width:
+                    Board[i-1,j+1] = count(Board,length,width,i-1,j+1)
+                if j+1 < width:
+                    Board[i,j+1] = count(Board,length,width,i,j+1)
+                if i+1 < length and j+1 < width:
+                    Board[i+1,j+1] = count(Board,length,width,i+1,j+1)
+                Board[i,j] = Square.ZERO_ALREADY_COUNTED
     return Board
 def uncoverall(Board,length,width):
     for i in range(length):
@@ -89,25 +109,31 @@ def updatescreen():
             if (i*k+xmove)//zoom < -Tile_Size[0] or (j*k+ymove)//zoom < -Tile_Size[1] or i*(k//zoom)+xmove//zoom > 1280 or j*(k//zoom)+ymove//zoom > 700: #Damits die usse nöd renderet
                 continue
             else:
-                if Board[i,j] == -1 or Board[i,j] == 10 and showbombs == False: Screen.blit(hidden_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 10 and showbombs == True or Board[i,j] == -10 and showbombs == True: Screen.blit(bomb_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == -3 or Board[i,j] == -10 and showbombs == False: Screen.blit(flag_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 11: Screen.blit(explosion_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == -2 or Board[i,j] == 0: Screen.blit(zero_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 1: Screen.blit(one_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 2: Screen.blit(two_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 3: Screen.blit(three_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 4: Screen.blit(four_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 5: Screen.blit(five_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 6: Screen.blit(six_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 7: Screen.blit(seven_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-                if Board[i,j] == 8: Screen.blit(eight_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
-    if losescreen == True: 
+                if Board[i,j] == Square.HIDDEN or Board[i,j] == Square.BOMB and showbombs == False: Screen.blit(hidden_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.BOMB and showbombs == True or Board[i,j] == Square.FLAGGED_BOMB and showbombs == True: Screen.blit(bomb_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.FLAGGED_NON_BOMB or Board[i,j] == Square.FLAGGED_BOMB and showbombs == False: Screen.blit(flag_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.EXPLOSION: Screen.blit(explosion_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.ZERO_ALREADY_COUNTED or Board[i,j] == Square.ZERO: Screen.blit(zero_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.ONE: Screen.blit(one_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.TWO: Screen.blit(two_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.THREE: Screen.blit(three_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.FOUR: Screen.blit(four_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.FIVE: Screen.blit(five_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.SIX: Screen.blit(six_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.SEVEN: Screen.blit(seven_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+                if Board[i,j] == Square.EIGHT: Screen.blit(eight_surf,((i*(k//zoom)+xmove//zoom),(j*(k//zoom)+ymove//zoom)))
+    if losescreen: 
         Screen.blit(lost_surf,(0,0))
-    if wonscreen == True: 
+    if wonscreen: 
         Screen.blit(won_surf,(0,0))
     pygame.display.update()
-    
+
+def changeflag(Board,tile):
+    if Board[tile[0],tile[1]] == Square.BOMB: Board[tile[0],tile[1]] = Square.FLAGGED_BOMB
+    elif Board[tile[0],tile[1]] == Square.FLAGGED_BOMB: Board[tile[0],tile[1]] = Square.BOMB
+    elif Board[tile[0],tile[1]] == Square.HIDDEN: Board[tile[0],tile[1]] = Square.FLAGGED_NON_BOMB
+    elif Board[tile[0],tile[1]] == Square.FLAGGED_NON_BOMB: Board[tile[0],tile[1]] = Square.HIDDEN
+    return Board
 
 print("\nHello Player! Welcome to my Minesweeper!\n")
 while True:
@@ -134,8 +160,7 @@ else: #Breiti macht us wie gross mers chönd mache
     k = 700//width
 x = length*k
 y = width*k
-Board = np.full((length,width),-1)
-Board[Board == 0] = -1
+Board = np.full((length,width),Square.HIDDEN)
     
 pygame.init()
 Screen = pygame.display.set_mode((1280,700))
@@ -171,7 +196,7 @@ while True:
                     for i in range(-1,2):
                         for j in range(-1,2):
                             try:
-                                Board[tile[0]+i,tile[1]+j] = 0
+                                Board[tile[0]+i,tile[1]+j] = Square.ZERO
                             except:
                                 continue
                             
@@ -180,30 +205,27 @@ while True:
                     for i in range(-1,2):
                         for j in range(-1,2):
                             try:
-                                Board[tile[0]+i,tile[1]+j] = -1
+                                Board[tile[0]+i,tile[1]+j] = Square.HIDDEN
                             except:
                                 continue
 
-                    Board[tile[0],tile[1]] = 0    
+                    Board[tile[0],tile[1]] = Square.ZERO
                     Board = uncover(Board,length,width)
     
-                elif Board[tile[0],tile[1]] == 10 or Board[tile[0],tile[1]] == -10:
-                    Board[tile[0],tile[1]] = 11
+                elif Board[tile[0],tile[1]] == Square.BOMB or Board[tile[0],tile[1]] == Square.FLAGGED_BOMB:
+                    Board[tile[0],tile[1]] = Square.EXPLOSION
                     lost = True
                     showbombs = True
                     losescreen = True
                     
             
                 else:
+                    if Board[tile[0],tile[1]] == Square.FLAGGED_NON_BOMB: Board[tile[0],tile[1]] = Square.HIDDEN
                     Board[tile[0],tile[1]] = count(Board,length,width,tile[0],tile[1])
                     Board = uncover(Board,length,width)
     
-            if pygame.mouse.get_pressed() == (False,False,True) and firstmove == False:
-                if Board[tile[0],tile[1]] == 10: Board[tile[0],tile[1]] = -10
-                elif Board[tile[0],tile[1]] == -10: Board[tile[0],tile[1]] = 10
-                elif Board[tile[0],tile[1]] == -1: Board[tile[0],tile[1]] = -3
-                elif Board[tile[0],tile[1]] == -3: Board[tile[0],tile[1]] = -1
-        
+            if pygame.mouse.get_pressed() == (False,False,True) and firstmove == False: Board = changeflag(Board,tile)
+    
         if event.type == pygame.MOUSEWHEEL:
                if event.y > 0:
                    zoom *= 0.9
@@ -218,7 +240,7 @@ while True:
         lost = False
         showbombs = False
         won = False
-        Board = np.full((length,width),-1)
+        Board = np.full((length,width),Square.HIDDEN)
     
     if pressed[pygame.K_u] and lost:
         uncoverall(Board,length,width)
@@ -266,7 +288,7 @@ while True:
     seven_surf = pygame.transform.scale(pygame.image.load("graphics/seven.png").convert(), Tile_Size)
     eight_surf = pygame.transform.scale(pygame.image.load("graphics/eight.png").convert(), Tile_Size)
     
-    if np.count_nonzero(Board == -1) + np.count_nonzero(Board == -3) == 0 and won == False and lost == False:
+    if np.count_nonzero(Board == Square.HIDDEN) + np.count_nonzero(Board == Square.FLAGGED_NON_BOMB) == 0 and won == False and lost == False:
         won = True
         wonscreen = True
         showbombs = True
